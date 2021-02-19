@@ -1,0 +1,123 @@
+<?xml version='1.0' standalone='yes'?>
+<!DOCTYPE PLUGIN [
+  <!ENTITY name      "coral-driver">
+  <!ENTITY author    "ich777">
+  <!ENTITY version   "2021.02.19">
+  <!ENTITY gitURL    "https://github.com/&author;/unraid-&name;/raw/master">
+  <!ENTITY pluginURL "&gitURL;/&name;.plg">
+  <!ENTITY plugin    "/boot/config/plugins/&name;">
+  <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
+]>
+
+<PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="6.9.0-rc2">
+
+<CHANGES>
+###2021.02.19
+- Initial release
+
+</CHANGES>
+
+<FILE Run="/bin/bash">
+<INLINE>
+rm -f $(ls /boot/config/plugins/&name;/&name;*.txz 2>/dev/null|grep -v '&version;')
+</INLINE>
+</FILE>
+
+<FILE Name="&emhttp;/images/coral-driver.png">
+<URL>https://git.minenet.at/ich777/docker-templates/raw/branch/master/ich777/images/coral-driver.png</URL>
+</FILE>
+
+<FILE Name="&emhttp;/README.md">
+<INLINE>
+**Coral Accelerator Module Drivers**
+
+This package contains the Coral Accelerator Module Drivers and installs it to utilize them in your Docker containers.
+</INLINE>
+</FILE>
+
+<FILE Run="/bin/bash">
+<INLINE>
+
+KERNEL_V="$(uname -r)"
+PACKAGE="coral"
+DL_URL="https://github.com/ich777/unraid-plugins-repo/releases/download/$KERNEL_V"
+
+if [ ! -d "&plugin;/packages/${KERNEL_V%%-*}" ]; then
+  mkdir -p "&plugin;/packages/${KERNEL_V%%-*}"
+fi
+
+#Check for old packages
+rm -rf $(ls -d &plugin;/packages/* | grep -v "${KERNEL_V%%-*}")
+
+download() {
+#Download Coral Accelerator Module Drivers
+if wget -q -nc --show-progress --progress=bar:force:noscroll -O "&plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz" "${DL_URL}/${PACKAGE}-1.txz" ; then
+  if [ "$(md5sum "&plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz" | cut -d ' ' -f1)" != "$(wget -qO- "${DL_URL}/${PACKAGE}-1.txz.md5" | cut -d ' ' -f1)" ]; then
+    echo
+    echo "---CHECKSUM ERROR!---"
+    exit 1
+  fi
+  echo
+  echo "-----------Sucessfully downloaded Coral Accelerator Module Drivers------------"
+else
+  echo
+  echo "---------------Can't download Coral Accelerator Module Drivers----------------"
+  exit 1
+fi
+}
+
+check() {
+if [ ! -f "&plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz" ]; then
+  echo
+  echo "---------------Downloading Coral Accelerator Module Drivers!-----------------"
+  echo "---------This could take some time, please don't close this window!----------"
+  download
+elif [ ! -s "&plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz" ]; then
+  rm -rf &plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz
+  echo
+  echo "----Download is empty please contact the developer of this plugin if the-----"
+  echo "----------plugin has been already built against that Kernel version----------"
+  exit 1
+else
+  echo
+  echo "---------------Coral Accelerator Module Drivers found locally----------------"
+fi
+}
+
+install() {
+#Install Coral Accelerator Module Drivers
+/sbin/installpkg "&plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz"
+depmod -a
+/sbin/modprobe gasket
+/sbin/modprobe apex
+}
+
+#Check if Coral Accelerator Module Drivers are allready downloaded
+check
+install > /dev/null
+
+echo
+echo "-------------Installation of Coral Accelerator Module Drivers successfull-------------"
+echo
+
+</INLINE>
+</FILE>
+
+<FILE Run="/bin/bash" Method="remove">
+<INLINE>
+
+echo "---------------------------------------------------"
+echo "---Uninstalling Coral Accelerator Module Drivers---"
+echo "---------------------------------------------------"
+# Remove plugin related files
+rm -rf /usr/local/emhttp/plugins/&name;
+rm -rf &plugin;
+echo
+echo "------------------------------------------------------------------------------"
+echo "---Coral Accelerator Module Drivers uninstalled, please reboot your server!---"
+echo "------------------------------------------------------------------------------"
+echo
+
+</INLINE>
+</FILE>
+</PLUGIN>

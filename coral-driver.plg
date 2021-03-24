@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "coral-driver">
   <!ENTITY author    "ich777">
-  <!ENTITY version   "2021.02.19">
+  <!ENTITY version   "2021.03.24">
   <!ENTITY gitURL    "https://github.com/&author;/unraid-&name;/raw/master">
   <!ENTITY pluginURL "&gitURL;/&name;.plg">
   <!ENTITY plugin    "/boot/config/plugins/&name;">
@@ -12,6 +12,10 @@
 <PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="6.9.0-rc2">
 
 <CHANGES>
+
+###2021.03.24
+- Integrated icon into package
+
 ###2021.02.19
 - Initial release
 
@@ -21,10 +25,6 @@
 <INLINE>
 rm -f $(ls /boot/config/plugins/&name;/&name;*.txz 2>/dev/null|grep -v '&version;')
 </INLINE>
-</FILE>
-
-<FILE Name="&emhttp;/images/coral-driver.png">
-<URL>https://git.minenet.at/ich777/docker-templates/raw/branch/master/ich777/images/coral-driver.png</URL>
 </FILE>
 
 <FILE Name="&emhttp;/README.md">
@@ -96,6 +96,12 @@ depmod -a
 check
 install > /dev/null
 
+#Check if icon is already installed
+if [ ! -f &emhttp;/images/coral-driver.png ]; then
+  mkdir -p &emhttp;/images
+  wget -O &emhttp;/images/coral-driver.png https://raw.githubusercontent.com/ich777/docker-templates/master/ich777/images/coral-driver.png
+fi
+
 echo
 echo "-------------Installation of Coral Accelerator Module Drivers successfull-------------"
 echo
@@ -110,7 +116,7 @@ echo "---------------------------------------------------"
 echo "---Uninstalling Coral Accelerator Module Drivers---"
 echo "---------------------------------------------------"
 # Remove plugin related files
-rm -rf /usr/local/emhttp/plugins/&name;
+rm -rf &emhttp;
 rm -rf &plugin;
 echo
 echo "------------------------------------------------------------------------------"

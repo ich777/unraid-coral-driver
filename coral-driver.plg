@@ -58,10 +58,10 @@ if wget -q -nc --show-progress --progress=bar:force:noscroll -O "&plugin;/packag
     exit 1
   fi
   echo
-  echo "-----------Sucessfully downloaded Coral Accelerator Module Drivers------------"
+  echo "----------Sucessfully downloaded Coral Accelerator Module Drivers------------"
 else
   echo
-  echo "---------------Can't download Coral Accelerator Module Drivers----------------"
+  echo "--------------Can't download Coral Accelerator Module Drivers----------------"
   exit 1
 fi
 }
@@ -103,7 +103,7 @@ if [ ! -f &emhttp;/images/coral-driver.png ]; then
 fi
 
 echo
-echo "-------------Installation of Coral Accelerator Module Drivers successfull-------------"
+echo "--------Installation of Coral Accelerator Module Drivers successfull---------"
 echo
 
 </INLINE>

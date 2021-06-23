@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "coral-driver">
   <!ENTITY author    "ich777">
-  <!ENTITY version   "2021.03.25">
+  <!ENTITY version   "2021.06.23">
   <!ENTITY gitURL    "https://github.com/&author;/unraid-&name;/raw/master">
   <!ENTITY pluginURL "&gitURL;/&name;.plg">
   <!ENTITY plugin    "/boot/config/plugins/&name;">
@@ -12,6 +12,9 @@
 <PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="6.9.0-rc2">
 
 <CHANGES>
+
+###2021.06.23
+- Changed package download repo
 
 ###2021.03.25
 - Added wait for network and timout
@@ -23,12 +26,6 @@
 - Initial release
 
 </CHANGES>
-
-<FILE Run="/bin/bash">
-<INLINE>
-rm -f $(ls /boot/config/plugins/&name;/&name;*.txz 2>/dev/null|grep -v '&version;')
-</INLINE>
-</FILE>
 
 <FILE Name="&emhttp;/README.md">
 <INLINE>
@@ -42,8 +39,8 @@ This package contains the Coral Accelerator Module Drivers and installs them to 
 <INLINE>
 
 KERNEL_V="$(uname -r)"
-PACKAGE="coral"
-DL_URL="https://github.com/ich777/unraid-plugins-repo/releases/download/$KERNEL_V"
+PACKAGE="coral-plugin-${KERNEL_V}"
+DL_URL="https://github.com/ich777/unraid-coral-driver/releases/download/$KERNEL_V"
 
 #Wait for Network and timeout after 30 seconds
 HOST="8.8.8.8"
@@ -57,6 +54,10 @@ fi
 
 #Check for old packages
 rm -rf $(ls -d &plugin;/packages/* | grep -v "${KERNEL_V%%-*}")
+
+if [ ! -f "&plugin;/&name;.png" ]; then
+  wget -q -nc -O "&plugin;/&name;.png" "https://raw.githubusercontent.com/ich777/docker-templates/master/ich777/images/coral-driver.png"
+fi
 
 download() {
 #Download Coral Accelerator Module Drivers
@@ -105,10 +106,12 @@ depmod -a
 check
 install > /dev/null
 
-#Check if icon is already installed
-if [ ! -f &emhttp;/images/coral-driver.png ]; then
-  mkdir -p &emhttp;/images
-  wget -O &emhttp;/images/coral-driver.png https://raw.githubusercontent.com/ich777/docker-templates/master/ich777/images/coral-driver.png
+#Install icon
+if [ ! -f "&emhttp;/images/&name;.png" ]; then
+  if [ ! -d "&emhttp;/images" ]; then
+    mkdir -p &emhttp;/images
+  fi
+  cp &plugin;/&name;.png &emhttp;/images/
 fi
 
 echo

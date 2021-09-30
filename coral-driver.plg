@@ -2,14 +2,16 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "coral-driver">
   <!ENTITY author    "ich777">
-  <!ENTITY version   "2021.06.23">
+  <!ENTITY version   "2021.09.30">
+  <!ENTITY md5       "af73f35bae7daaccf1f03f0bd2e08031">
+  <!ENTITY launch    "Settings/&name;">
   <!ENTITY gitURL    "https://github.com/&author;/unraid-&name;/raw/master">
   <!ENTITY pluginURL "&gitURL;/&name;.plg">
   <!ENTITY plugin    "/boot/config/plugins/&name;">
   <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
 ]>
 
-<PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="6.9.0-rc2">
+<PLUGIN  name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;" min="6.9.0-rc2">
 
 <CHANGES>
 
@@ -27,7 +29,27 @@
 
 </CHANGES>
 
-<FILE Name="&emhttp;/README.md">
+<FILE Run="/bin/bash">
+<INLINE>
+rm -f $(ls &plugin;/&name;*.txz 2>/dev/null|grep -v '&version;')
+</INLINE>
+</FILE>
+
+<FILE Name="&plugin;/&name;-&version;.txz" Run="upgradepkg --install-new">
+<URL>https://raw.githubusercontent.com/ich777/&name;/master/packages/&name;-&version;.txz</URL>
+<MD5>&md5;</MD5>
+</FILE>
+
+<FILE Name="&emhttp;/READM<FILE Run="/bin/bash">
+<INLINE>
+rm -f $(ls &plugin;/gvt.g*.txz 2>/dev/null|grep -v '&version;')
+</INLINE>
+</FILE>
+
+<FILE Name="&plugin;/gvt.g-&version;.txz" Run="upgradepkg --install-new">
+<URL>https://raw.githubusercontent.com/ich777/&name;/master/packages/gvt.g-&version;.txz</URL>
+<MD5>&md5;</MD5>
+</FILE>E.md">
 <INLINE>
 **Coral Accelerator Module Drivers**
 
@@ -106,12 +128,9 @@ depmod -a
 check
 install > /dev/null
 
-#Install icon
-if [ ! -f "&emhttp;/images/&name;.png" ]; then
-  if [ ! -d "&emhttp;/images" ]; then
-    mkdir -p &emhttp;/images
-  fi
-  cp &plugin;/&name;.png &emhttp;/images/
+#Remove icon
+if [ ! -f "&plugin;/&name;.png" ]; then
+  rm &plugin;/&name;.png
 fi
 
 echo
@@ -128,6 +147,7 @@ echo "---------------------------------------------------"
 echo "---Uninstalling Coral Accelerator Module Drivers---"
 echo "---------------------------------------------------"
 # Remove plugin related files
+removepkg &name;-&version;
 rm -rf &emhttp;
 rm -rf &plugin;
 echo

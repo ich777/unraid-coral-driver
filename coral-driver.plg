@@ -11,7 +11,7 @@
   <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
 ]>
 
-<PLUGIN  name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;" min="6.9.0-rc2">
+<PLUGIN  name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;" min="6.9.0-rc2" support="https://forums.unraid.net/topic/98064-support-blakeblackshear-frigate/">
 
 <CHANGES>
 

@@ -4,7 +4,7 @@
   <!ENTITY author    "ich777">
   <!ENTITY version   "2021.09.30">
   <!ENTITY md5       "af73f35bae7daaccf1f03f0bd2e08031">
-  <!ENTITY launch    "Settings/&name;">
+  <!ENTITY launch    "Settings/coraltpu">
   <!ENTITY gitURL    "https://github.com/&author;/unraid-&name;/raw/master">
   <!ENTITY pluginURL "&gitURL;/&name;.plg">
   <!ENTITY plugin    "/boot/config/plugins/&name;">
@@ -123,7 +123,7 @@ check
 install > /dev/null
 
 #Remove icon
-if [ ! -f "&plugin;/&name;.png" ]; then
+if [ -f "&plugin;/&name;.png" ]; then
   rm &plugin;/&name;.png
 fi
 

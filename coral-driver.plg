@@ -39,7 +39,7 @@ rm -f $(ls &plugin;/&name;*.txz 2>/dev/null|grep -v '&version;')
 </FILE>
 
 <FILE Name="&plugin;/&name;-&version;.txz" Run="upgradepkg --install-new">
-<URL>https://raw.githubusercontent.com/ich777/&name;/master/packages/&name;-&version;.txz</URL>
+<URL>&gitURL;/packages/&name;-&version;.txz</URL>
 <MD5>&md5;</MD5>
 </FILE>
 

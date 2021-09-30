@@ -15,6 +15,9 @@
 
 <CHANGES>
 
+###2021.09.30
+- Added plugin page to show information about the connected TPU(s)
+
 ###2021.06.23
 - Changed package download repo
 

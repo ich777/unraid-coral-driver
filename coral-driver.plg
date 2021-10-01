@@ -2,8 +2,8 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "coral-driver">
   <!ENTITY author    "ich777">
-  <!ENTITY version   "2021.09.30">
-  <!ENTITY md5       "af73f35bae7daaccf1f03f0bd2e08031">
+  <!ENTITY version   "2021.10.01">
+  <!ENTITY md5       "5f81b8347bee43e9609eaff0c63731bd">
   <!ENTITY launch    "Settings/coraltpu">
   <!ENTITY gitURL    "https://github.com/&author;/unraid-&name;/raw/master">
   <!ENTITY pluginURL "&gitURL;/&name;.plg">
@@ -14,6 +14,11 @@
 <PLUGIN  name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;" min="6.9.0-rc2" support="https://forums.unraid.net/topic/98064-support-blakeblackshear-frigate/">
 
 <CHANGES>
+
+###2021.10.01
+- Improved plugin page to show information for up to 4 installed TPUs
+- Set shutdown temperature by default to 104.8C for up to 4 installed TPUs
+- Enable shutdown temperature by default for up to 4 installed TPUs
 
 ###2021.09.30
 - Added plugin page to show information about the connected TPU(s)
@@ -53,6 +58,18 @@ This package contains the Coral Accelerator Module Drivers and installs them to 
 
 <FILE Run="/bin/bash">
 <INLINE>
+
+#Create settings file if not found
+if [ ! -f "&plugin;/settings.cfg" ]; then
+  echo 'shutdowntemp0=104800
+shutdown_en0=1
+shutdowntemp1=104800
+shutdown_en1=1
+shutdowntemp2=104800
+shutdown_en2=1
+shutdowntemp3=104800
+shutdown_en3=1' > "&plugin;/settings.cfg"
+fi
 
 KERNEL_V="$(uname -r)"
 PACKAGE="coral-plugin-${KERNEL_V}"
@@ -116,6 +133,47 @@ install() {
 depmod -a
 /sbin/modprobe gasket
 /sbin/modprobe apex
+if [ -c "/dev/apex_0" ]; then
+  SHUTDOWN_TEMP="$(cat /boot/config/plugins/coral-driver/settings.cfg | grep "shutdowntemp0" | cut -d '=' -f2)"
+  SHUTDOWN_EN="$(cat /boot/config/plugins/coral-driver/settings.cfg | grep "shutdown_en0" | cut -d '=' -f2)"
+  if [ "$(cat /sys$(udevadm info --query=path --name=/dev/apex_0)/hw_temp_warn2)" != "${SHUTDOWN_TEMP}" ]; then
+    echo "$SHUTDOWN_TEMP" > /sys$(udevadm info --query=path --name=/dev/apex_0)/hw_temp_warn2
+  fi
+  if [ "$(cat /sys$(udevadm info --query=path --name=/dev/apex_0)/hw_temp_warn2_en)" != "${SHUTDOWN_EN}" ]; then
+    echo "$SHUTDOWN_EN" > /sys$(udevadm info --query=path --name=/dev/apex_0)/hw_temp_warn2_en
+  fi
+fi
+if [ -c "/dev/apex_1" ]; then
+  SHUTDOWN_TEMP="$(cat /boot/config/plugins/coral-driver/settings.cfg | grep "shutdowntemp1" | cut -d '=' -f2)"
+  SHUTDOWN_EN="$(cat /boot/config/plugins/coral-driver/settings.cfg | grep "shutdown_en1" | cut -d '=' -f2)"
+  if [ "$(cat /sys$(udevadm info --query=path --name=/dev/apex_1)/hw_temp_warn2)" != "${SHUTDOWN_TEMP}" ]; then
+    echo "$SHUTDOWN_TEMP" > /sys$(udevadm info --query=path --name=/dev/apex_1)/hw_temp_warn2
+  fi
+  if [ "$(cat /sys$(udevadm info --query=path --name=/dev/apex_1)/hw_temp_warn2_en)" != "${SHUTDOWN_EN}" ]; then
+    echo "$SHUTDOWN_EN" > /sys$(udevadm info --query=path --name=/dev/apex_1)/hw_temp_warn2_en
+  fi
+fi
+if [ -c "/dev/apex_2" ]; then
+  SHUTDOWN_TEMP="$(cat /boot/config/plugins/coral-driver/settings.cfg | grep "shutdowntemp2" | cut -d '=' -f2)"
+  SHUTDOWN_EN="$(cat /boot/config/plugins/coral-driver/settings.cfg | grep "shutdown_en2" | cut -d '=' -f2)"
+  if [ "$(cat /sys$(udevadm info --query=path --name=/dev/apex_2)/hw_temp_warn2)" != "${SHUTDOWN_TEMP}" ]; then
+    echo "$SHUTDOWN_TEMP" > /sys$(udevadm info --query=path --name=/dev/apex_2)/hw_temp_warn2
+  fi
+  if [ "$(cat /sys$(udevadm info --query=path --name=/dev/apex_2)/hw_temp_warn2_en)" != "${SHUTDOWN_EN}" ]; then
+    echo "$SHUTDOWN_EN" > /sys$(udevadm info --query=path --name=/dev/apex_2)/hw_temp_warn2_en
+  fi
+fi
+if [ -c "/dev/apex_3" ]; then
+  SHUTDOWN_TEMP="$(cat /boot/config/plugins/coral-driver/settings.cfg | grep "shutdowntemp3" | cut -d '=' -f2)"
+  SHUTDOWN_EN="$(cat /boot/config/plugins/coral-driver/settings.cfg | grep "shutdown_en3" | cut -d '=' -f2)"
+  if [ "$(cat /sys$(udevadm info --query=path --name=/dev/apex_3)/hw_temp_warn2)" != "${SHUTDOWN_TEMP}" ]; then
+    echo "$SHUTDOWN_TEMP" > /sys$(udevadm info --query=path --name=/dev/apex_3)/hw_temp_warn2
+  fi
+  if [ "$(cat /sys$(udevadm info --query=path --name=/dev/apex_3)/hw_temp_warn2_en)" != "${SHUTDOWN_EN}" ]; then
+    echo "$SHUTDOWN_EN" > /sys$(udevadm info --query=path --name=/dev/apex_3)/hw_temp_warn2_en
+  fi
+fi
+
 }
 
 #Check if Coral Accelerator Module Drivers are allready downloaded

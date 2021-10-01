@@ -3,7 +3,7 @@
   <!ENTITY name      "coral-driver">
   <!ENTITY author    "ich777">
   <!ENTITY version   "2021.10.01">
-  <!ENTITY md5       "5f81b8347bee43e9609eaff0c63731bd">
+  <!ENTITY md5       "8b2246b2159fcec1e14f262d6860c533">
   <!ENTITY launch    "Settings/coraltpu">
   <!ENTITY gitURL    "https://github.com/&author;/unraid-&name;/raw/master">
   <!ENTITY pluginURL "&gitURL;/&name;.plg">

@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "coral-driver">
   <!ENTITY author    "ich777">
-  <!ENTITY version   "2021.10.01">
+  <!ENTITY version   "2022.04.11">
   <!ENTITY md5       "8b2246b2159fcec1e14f262d6860c533">
   <!ENTITY launch    "Settings/coraltpu">
   <!ENTITY gitURL    "https://github.com/&author;/unraid-&name;/raw/master">
@@ -14,6 +14,9 @@
 <PLUGIN  name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;" min="6.9.0-rc2" support="https://forums.unraid.net/topic/98064-support-blakeblackshear-frigate/">
 
 <CHANGES>
+
+###2022.04.11
+- Added Plugin Update Helper when up-/downgrading unRAID version
 
 ###2021.10.01
 - Improved plugin page to show information for up to 4 installed TPUs
@@ -176,7 +179,47 @@ fi
 
 }
 
-#Check if Coral Accelerator Module Drivers are allready downloaded
+#Check if Plugin Update Helper is downloaded and up-to-date
+if [ ! -f &plugin;/plugin_update_helper ]; then
+  wget -q -T 5 -O &plugin;/plugin_update_helper "https://raw.githubusercontent.com/ich777/unraid-plugin_update_helper/master/plugin_update_helper"
+else
+  CUR_V="$(grep -E "Plugin-Update-Helper version:" &plugin;/plugin_update_helper | awk '{print $4}')"
+  if [ ! -s /tmp/update-helper ]; then
+    echo "$(wget -T5 -qO- https://raw.githubusercontent.com/ich777/unraid-plugin_update_helper/master/plugin_update_helper | grep -E "Plugin-Update-Helper version:" | awk '{print $4}')" > /tmp/update-helper
+    AVAIL_V="$(cat /tmp/update-helper)"
+  else
+    AVAIL_V="$(cat /tmp/update-helper)"
+  fi
+  if [ ! -z "$AVAIL_V" ]; then
+    COMPARE="$(sort -V &lt;(echo -e "${AVAIL_V}\n$CUR_V") | tail -1)"
+    if [ "$CUR_V" != "$COMPARE" ]; then
+      wget -q -T 5 -O &plugin;/plugin_update_helper "https://raw.githubusercontent.com/ich777/unraid-plugin_update_helper/master/plugin_update_helper"
+    fi
+  fi
+fi
+
+#Check if Plugin Update Helper is installed and up to date
+if [ ! -f /usr/bin/plugin_update_helper ]; then
+  cp &plugin;/plugin_update_helper /usr/bin/plugin_update_helper
+  chmod +x /usr/bin/plugin_update_helper
+else
+  PLUGIN_V="$(grep -E "Plugin-Update-Helper version:" &plugin;/plugin_update_helper | awk '{print $4}')"
+  INST_V="$(grep -E "Plugin-Update-Helper version:" /usr/bin/plugin_update_helper | awk '{print $4}')"
+  COMPARE="$(sort -V &lt;(echo -e "${PLUGIN_V}\n$INST_V") | tail -1)"
+  if [ "$INST_V" != "$COMPARE" ]; then
+    kill $(ps aux | grep -E "inotifywait -q /boot/changes.txt -e move_self,delete_self" | grep -v "grep -E inotifywait" | awk '{print $2}') 2>/dev/null
+    sleep 1
+    cp &plugin;/plugin_update_helper /usr/bin/plugin_update_helper
+    chmod +x /usr/bin/plugin_update_helper
+  fi
+fi
+
+#Start Plugin Update Helper
+if [ -z "$(ps aux | grep -E "inotifywait -q /boot/changes.txt -e move_self,delete_self" | grep -v "grep -E inotifywait" | awk '{print $2}')" ]; then
+  echo "/usr/bin/plugin_update_helper" | at now &gt; /dev/null 2&gt;&amp;1
+fi
+
+#Check if Coral Accelerator Module Drivers are already downloaded
 check
 install > /dev/null
 

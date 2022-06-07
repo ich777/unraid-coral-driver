@@ -1,22 +1,17 @@
 # Download source
 cd ${DATA_DIR}
-mkdir -p ${DATA_DIR}/apex
-wget -O ${DATA_DIR}/gasket.tar.gz https://coral.googlesource.com/linux-imx/+archive/refs/heads/master/drivers/staging/gasket.tar.gz
-tar -C ${DATA_DIR}/apex -xvf ${DATA_DIR}/gasket.tar.gz
-
-# Patch gasket_core.c to be compatible with Kernel 5.10+
-sed -i 's/\<ioremap_nocache\>/ioremap_cache/g' ${DATA_DIR}/apex/gasket_core.c
+mkdir -p ${DATA_DIR}/apex /CORAL/lib/modules/${UNAME}/extra
 
 # Compile modules
-cd ${DATA_DIR}/linux-${UNAME}
-export CONFIG_STAGING_APEX_DRIVER=m
-export CONFIG_STAGING_GASKET_FRAMEWORK=m
-make modules M=${DATA_DIR}/apex -j${CPU_COUNT}
-make INSTALL_MOD_PATH=/CORAL modules_install M=${DATA_DIR}/apex
+cd ${DATA_DIR}/apex/src
+make -j${CPU_COUNT}
+cp ${DATA_DIR}/apex/src/*.ko /CORAL/lib/modules/${UNAME}/extra
 
-# Cleanup modules directory
-cd /CORAL/lib/modules/${UNAME}
-find . -maxdepth 1 -not -name 'extra' -print0 | xargs -0 -I {} rm -R {} 2&>/dev/null
+#Compress modules
+while read -r line
+do
+  xz --check=crc32 --lzma2 $line
+done < <(find /CORAL/lib/modules/${UNAME}/extra -name "*.ko")
 
 # Create Slackware package
 PLUGIN_NAME="Coral"

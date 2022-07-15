@@ -16,6 +16,9 @@
 <CHANGES>
 
 ###2022.07.15
+- Overhaul from the Plugin page to display all TPUs installed in the system
+- Added message if no PCI based Coral TPUs are found
+- Enable/Disable and set Shutdown temperature from settings file for all TPUs
 - Necessary changes for unRAID 6.11+
 
 ###2022.04.11

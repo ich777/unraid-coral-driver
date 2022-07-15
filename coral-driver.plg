@@ -16,9 +16,6 @@
 <CHANGES>
 
 ###2022.07.15
-- Overhaul from the Plugin page to display all TPUs installed in the system
-- Added message if no PCI based Coral TPUs are found
-- Enable/Disable and set Shutdown temperature from settings file for all TPUs
 - Necessary changes for unRAID 6.11+
 
 ###2022.04.11
@@ -135,12 +132,12 @@ depmod -a
 check
 
 #Check if drivers are loaded
-if ! lsmod | grep -E "gasket|apex 2>/dev/null" ; then
+if ! lsmod | grep -E "gasket|apex" ; then
   install > /dev/null
 fi
 
 #Set temperature limits for Coral devices
-CORAL_DEVICES="$(find /dev/ -maxdepth 1 -type d -name "apex*" -printf '%f\n' 2>/dev/null)"
+CORAL_DEVICES="$(find /dev/ -maxdepth 1 -type c -name "apex*" -printf '%f\n' 2>/dev/null)"
 SHUTDOWN_TEMP="$(cat /boot/config/plugins/coral-driver/settings.cfg | grep "shutdowntemp0" | cut -d '=' -f2)"
 SHUTDOWN_EN="$(cat /boot/config/plugins/coral-driver/settings.cfg | grep "shutdown_en0" | cut -d '=' -f2)"
 

@@ -135,7 +135,7 @@ depmod -a
 check
 
 #Check if drivers are loaded
-if ! lsmod | grep -E "gasket|apex" 2>/dev/null ; then
+if ! lsmod | grep -Eq "gasket|apex" 2>/dev/null ; then
   install > /dev/null
 fi
 

@@ -2,8 +2,8 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "coral-driver">
   <!ENTITY author    "ich777">
-  <!ENTITY version   "2022.04.11">
-  <!ENTITY md5       "8b2246b2159fcec1e14f262d6860c533">
+  <!ENTITY version   "2022.07.15">
+  <!ENTITY md5       "075932c595c33ccc46c09b9cded606e5">
   <!ENTITY launch    "Settings/coraltpu">
   <!ENTITY gitURL    "https://github.com/&author;/unraid-&name;/raw/master">
   <!ENTITY pluginURL "&gitURL;/&name;.plg">
@@ -14,6 +14,12 @@
 <PLUGIN  name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;" min="6.9.0-rc2" support="https://forums.unraid.net/topic/98064-support-blakeblackshear-frigate/">
 
 <CHANGES>
+
+###2022.07.15
+- Overhaul from the Plugin page to display all TPUs installed in the system
+- Added message if no PCI based Coral TPUs are found
+- Enable/Disable and set Shutdown temperature from settings file for all TPUs
+- Necessary changes for unRAID 6.11+
 
 ###2022.04.11
 - Added Plugin Update Helper when up-/downgrading unRAID version
@@ -65,24 +71,12 @@ This package contains the Coral Accelerator Module Drivers and installs them to 
 #Create settings file if not found
 if [ ! -f "&plugin;/settings.cfg" ]; then
   echo 'shutdowntemp0=104800
-shutdown_en0=1
-shutdowntemp1=104800
-shutdown_en1=1
-shutdowntemp2=104800
-shutdown_en2=1
-shutdowntemp3=104800
-shutdown_en3=1' > "&plugin;/settings.cfg"
+shutdown_en0=1' > "&plugin;/settings.cfg"
 fi
 
 KERNEL_V="$(uname -r)"
 PACKAGE="coral-plugin-${KERNEL_V}"
 DL_URL="https://github.com/ich777/unraid-coral-driver/releases/download/$KERNEL_V"
-
-#Wait for Network and timeout after 30 seconds
-HOST="8.8.8.8"
-for i in {1..10}; do
-  ping -c1 $HOST &amp;> /dev/null &amp;&amp; break;
-done
 
 if [ ! -d "&plugin;/packages/${KERNEL_V%%-*}" ]; then
   mkdir -p "&plugin;/packages/${KERNEL_V%%-*}"
@@ -91,16 +85,13 @@ fi
 #Check for old packages
 rm -rf $(ls -d &plugin;/packages/* | grep -v "${KERNEL_V%%-*}")
 
-if [ ! -f "&plugin;/&name;.png" ]; then
-  wget -q -nc -O "&plugin;/&name;.png" "https://raw.githubusercontent.com/ich777/docker-templates/master/ich777/images/coral-driver.png"
-fi
-
 download() {
 #Download Coral Accelerator Module Drivers
 if wget -q -nc --show-progress --progress=bar:force:noscroll -O "&plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz" "${DL_URL}/${PACKAGE}-1.txz" ; then
   if [ "$(md5sum "&plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz" | cut -d ' ' -f1)" != "$(wget -qO- "${DL_URL}/${PACKAGE}-1.txz.md5" | cut -d ' ' -f1)" ]; then
     echo
     echo "---CHECKSUM ERROR!---"
+    rm -rf &plugin; &emhttp;
     exit 1
   fi
   echo
@@ -108,6 +99,7 @@ if wget -q -nc --show-progress --progress=bar:force:noscroll -O "&plugin;/packag
 else
   echo
   echo "--------------Can't download Coral Accelerator Module Drivers----------------"
+  rm -rf &plugin; &emhttp;
   exit 1
 fi
 }
@@ -123,6 +115,7 @@ elif [ ! -s "&plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz" ]; then
   echo
   echo "----Download is empty please contact the developer of this plugin if the-----"
   echo "----------plugin has been already built against that Kernel version----------"
+  rm -rf &plugin; &emhttp;
   exit 1
 else
   echo
@@ -136,48 +129,35 @@ install() {
 depmod -a
 /sbin/modprobe gasket
 /sbin/modprobe apex
-if [ -c "/dev/apex_0" ]; then
-  SHUTDOWN_TEMP="$(cat /boot/config/plugins/coral-driver/settings.cfg | grep "shutdowntemp0" | cut -d '=' -f2)"
-  SHUTDOWN_EN="$(cat /boot/config/plugins/coral-driver/settings.cfg | grep "shutdown_en0" | cut -d '=' -f2)"
-  if [ "$(cat /sys$(udevadm info --query=path --name=/dev/apex_0)/hw_temp_warn2)" != "${SHUTDOWN_TEMP}" ]; then
-    echo "$SHUTDOWN_TEMP" > /sys$(udevadm info --query=path --name=/dev/apex_0)/hw_temp_warn2
-  fi
-  if [ "$(cat /sys$(udevadm info --query=path --name=/dev/apex_0)/hw_temp_warn2_en)" != "${SHUTDOWN_EN}" ]; then
-    echo "$SHUTDOWN_EN" > /sys$(udevadm info --query=path --name=/dev/apex_0)/hw_temp_warn2_en
-  fi
-fi
-if [ -c "/dev/apex_1" ]; then
-  SHUTDOWN_TEMP="$(cat /boot/config/plugins/coral-driver/settings.cfg | grep "shutdowntemp1" | cut -d '=' -f2)"
-  SHUTDOWN_EN="$(cat /boot/config/plugins/coral-driver/settings.cfg | grep "shutdown_en1" | cut -d '=' -f2)"
-  if [ "$(cat /sys$(udevadm info --query=path --name=/dev/apex_1)/hw_temp_warn2)" != "${SHUTDOWN_TEMP}" ]; then
-    echo "$SHUTDOWN_TEMP" > /sys$(udevadm info --query=path --name=/dev/apex_1)/hw_temp_warn2
-  fi
-  if [ "$(cat /sys$(udevadm info --query=path --name=/dev/apex_1)/hw_temp_warn2_en)" != "${SHUTDOWN_EN}" ]; then
-    echo "$SHUTDOWN_EN" > /sys$(udevadm info --query=path --name=/dev/apex_1)/hw_temp_warn2_en
-  fi
-fi
-if [ -c "/dev/apex_2" ]; then
-  SHUTDOWN_TEMP="$(cat /boot/config/plugins/coral-driver/settings.cfg | grep "shutdowntemp2" | cut -d '=' -f2)"
-  SHUTDOWN_EN="$(cat /boot/config/plugins/coral-driver/settings.cfg | grep "shutdown_en2" | cut -d '=' -f2)"
-  if [ "$(cat /sys$(udevadm info --query=path --name=/dev/apex_2)/hw_temp_warn2)" != "${SHUTDOWN_TEMP}" ]; then
-    echo "$SHUTDOWN_TEMP" > /sys$(udevadm info --query=path --name=/dev/apex_2)/hw_temp_warn2
-  fi
-  if [ "$(cat /sys$(udevadm info --query=path --name=/dev/apex_2)/hw_temp_warn2_en)" != "${SHUTDOWN_EN}" ]; then
-    echo "$SHUTDOWN_EN" > /sys$(udevadm info --query=path --name=/dev/apex_2)/hw_temp_warn2_en
-  fi
-fi
-if [ -c "/dev/apex_3" ]; then
-  SHUTDOWN_TEMP="$(cat /boot/config/plugins/coral-driver/settings.cfg | grep "shutdowntemp3" | cut -d '=' -f2)"
-  SHUTDOWN_EN="$(cat /boot/config/plugins/coral-driver/settings.cfg | grep "shutdown_en3" | cut -d '=' -f2)"
-  if [ "$(cat /sys$(udevadm info --query=path --name=/dev/apex_3)/hw_temp_warn2)" != "${SHUTDOWN_TEMP}" ]; then
-    echo "$SHUTDOWN_TEMP" > /sys$(udevadm info --query=path --name=/dev/apex_3)/hw_temp_warn2
-  fi
-  if [ "$(cat /sys$(udevadm info --query=path --name=/dev/apex_3)/hw_temp_warn2_en)" != "${SHUTDOWN_EN}" ]; then
-    echo "$SHUTDOWN_EN" > /sys$(udevadm info --query=path --name=/dev/apex_3)/hw_temp_warn2_en
-  fi
+}
+
+#Check if Coral Accelerator Module Drivers are already downloaded
+check
+
+#Check if drivers are loaded
+if ! lsmod | grep -E "gasket|apex" ; then
+  install > /dev/null
 fi
 
-}
+#Set temperature limits for Coral devices
+CORAL_DEVICES="$(find /dev/ -maxdepth 1 -type d -name "apex*" -printf '%f\n' 2>/dev/null)"
+SHUTDOWN_TEMP="$(cat /boot/config/plugins/coral-driver/settings.cfg | grep "shutdowntemp0" | cut -d '=' -f2)"
+SHUTDOWN_EN="$(cat /boot/config/plugins/coral-driver/settings.cfg | grep "shutdown_en0" | cut -d '=' -f2)"
+
+for device in ${CORAL_DEVICES}; do
+  if [ "$(cat /sys$(udevadm info --query=path --name=/dev/${device})/hw_temp_warn2 2>/dev/null)" != "${SHUTDOWN_TEMP}" ]; then
+    echo "$SHUTDOWN_TEMP" > /sys$(udevadm info --query=path --name=/dev/${device})/hw_temp_warn2
+  fi
+  if [ "$(cat /sys$(udevadm info --query=path --name=/dev/${device})/hw_temp_warn2_en 2>/dev/null)" != "${SHUTDOWN_EN}" ]; then
+    echo "$SHUTDOWN_EN" > /sys$(udevadm info --query=path --name=/dev/${device})/hw_temp_warn2_en
+  fi
+done
+
+#Remove icon
+if [ -f "&plugin;/&name;.png" ]; then
+  rm &plugin;/&name;.png
+fi
+
 
 #Check if Plugin Update Helper is downloaded and up-to-date
 if [ ! -f &plugin;/plugin_update_helper ]; then
@@ -219,14 +199,6 @@ if [ -z "$(ps aux | grep -E "inotifywait -q /boot/changes.txt -e move_self,delet
   echo "/usr/bin/plugin_update_helper" | at now &gt; /dev/null 2&gt;&amp;1
 fi
 
-#Check if Coral Accelerator Module Drivers are already downloaded
-check
-install > /dev/null
-
-#Remove icon
-if [ -f "&plugin;/&name;.png" ]; then
-  rm &plugin;/&name;.png
-fi
 
 echo
 echo "--------Installation of Coral Accelerator Module Drivers successful----------"

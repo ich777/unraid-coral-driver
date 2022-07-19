@@ -2,18 +2,23 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "coral-driver">
   <!ENTITY author    "ich777">
-  <!ENTITY version   "2022.07.15">
+  <!ENTITY version   "2022.07.19">
   <!ENTITY md5       "075932c595c33ccc46c09b9cded606e5">
   <!ENTITY launch    "Settings/coraltpu">
   <!ENTITY gitURL    "https://github.com/&author;/unraid-&name;/raw/master">
   <!ENTITY pluginURL "&gitURL;/&name;.plg">
   <!ENTITY plugin    "/boot/config/plugins/&name;">
   <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
+  <!ENTITY packages  "/usr/local/emhttp/plugins/&name;/packages">
 ]>
 
 <PLUGIN  name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;" min="6.9.0-rc2" support="https://forums.unraid.net/topic/98064-support-blakeblackshear-frigate/">
 
 <CHANGES>
+
+###2022.07.19
+- Bugfix if Kernel module is already available or not
+- Cleanup
 
 ###2022.07.15
 - Overhaul from the Plugin page to display all TPUs installed in the system
@@ -68,27 +73,10 @@ This package contains the Coral Accelerator Module Drivers and installs them to 
 <FILE Run="/bin/bash">
 <INLINE>
 
-#Create settings file if not found
-if [ ! -f "&plugin;/settings.cfg" ]; then
-  echo 'shutdowntemp0=104800
-shutdown_en0=1' > "&plugin;/settings.cfg"
-fi
-
-KERNEL_V="$(uname -r)"
-PACKAGE="coral-plugin-${KERNEL_V}"
-DL_URL="https://github.com/ich777/unraid-coral-driver/releases/download/$KERNEL_V"
-
-if [ ! -d "&plugin;/packages/${KERNEL_V%%-*}" ]; then
-  mkdir -p "&plugin;/packages/${KERNEL_V%%-*}"
-fi
-
-#Check for old packages
-rm -rf $(ls -d &plugin;/packages/* | grep -v "${KERNEL_V%%-*}")
-
 download() {
 #Download Coral Accelerator Module Drivers
-if wget -q -nc --show-progress --progress=bar:force:noscroll -O "&plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz" "${DL_URL}/${PACKAGE}-1.txz" ; then
-  if [ "$(md5sum "&plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz" | cut -d ' ' -f1)" != "$(wget -qO- "${DL_URL}/${PACKAGE}-1.txz.md5" | cut -d ' ' -f1)" ]; then
+if wget -q -nc --show-progress --progress=bar:force:noscroll -O "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" "${DL_URL}/${PACKAGE}-1.txz" ; then
+  if [ "$(md5sum "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" | cut -d ' ' -f1)" != "$(wget -qO- "${DL_URL}/${PACKAGE}-1.txz.md5" | cut -d ' ' -f1)" ]; then
     echo
     echo "---CHECKSUM ERROR!---"
     rm -rf &plugin; &emhttp;
@@ -105,13 +93,13 @@ fi
 }
 
 check() {
-if [ ! -f "&plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz" ]; then
+if [ ! -f "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" ]; then
   echo
   echo "---------------Downloading Coral Accelerator Module Drivers!-----------------"
   echo "---------This could take some time, please don't close this window!----------"
   download
-elif [ ! -s "&plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz" ]; then
-  rm -rf &plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz
+elif [ ! -s "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" ]; then
+  rm -rf &packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz
   echo
   echo "----Download is empty please contact the developer of this plugin if the-----"
   echo "----------plugin has been already built against that Kernel version----------"
@@ -125,17 +113,34 @@ fi
 
 install() {
 #Install Coral Accelerator Module Drivers
-/sbin/installpkg "&plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz"
+/sbin/installpkg "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz"
 depmod -a
 /sbin/modprobe gasket
 /sbin/modprobe apex
 }
 
+KERNEL_V="$(uname -r)"
+PACKAGE="coral-plugin-${KERNEL_V}"
+DL_URL="https://github.com/ich777/unraid-coral-driver/releases/download/$KERNEL_V"
+
+if [ ! -d "&packages;/${KERNEL_V%%-*}" ]; then
+  mkdir -p "&packages;/${KERNEL_V%%-*}"
+fi
+
+#Create settings file if not found
+if [ ! -f "&plugin;/settings.cfg" ]; then
+  echo 'shutdowntemp0=104800
+shutdown_en0=1' > "&plugin;/settings.cfg"
+fi
+
+#Check for old packages
+rm -rf $(ls -d &packages;/* | grep -v "${KERNEL_V%%-*}")
+
 #Check if Coral Accelerator Module Drivers are already downloaded
 check
 
-#Check if drivers are loaded
-if ! lsmod | grep -Eq "gasket|apex" 2>/dev/null ; then
+#Check if drivers are available or need to be installed
+if ! modinfo apex -0 >/dev/null 2>&amp;1 ; then
   install > /dev/null
 fi
 

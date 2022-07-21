@@ -115,7 +115,7 @@ fi
 
 install() {
 # Install Coral Accelerator Module Drivers
-/sbin/installpkg "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz"
+/sbin/installpkg "&packages;/${KERNEL_V%%-*}/${PACKAGE}*.txz"
 depmod -a
 /sbin/modprobe gasket
 /sbin/modprobe apex

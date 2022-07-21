@@ -23,23 +23,26 @@ $(function(){
 
 <h1 style="text-align: center;"><a href="https://forums.unraid.net/topic/98064-support-blakeblackshear-frigate/" target="_blank" rel="noopener"><span style="color:#ff5e4d;">Coral TPU Driver</span></a></h1>
 
-<?
-if (file_exists('/dev/apex_0')):
-?>
 <?php
-$device = "apex_0";
-$status = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_status ".escapeshellarg($device)."");
-$drv_v = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_driver_version ".escapeshellarg($device)."");
-$frw_v = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_framework_version ".escapeshellarg($device)."");
-$temp = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp apex_0");
-$tempinter = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_hot1 ".escapeshellarg($device)."");
-$tempinter_en = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_hot1_en ".escapeshellarg($device)."");
-$tempshutd = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_hot2 ".escapeshellarg($device)."");
-$tempshutd_en = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_hot2_en ".escapeshellarg($device)."");
-$tripp0 = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_tripp0 ".escapeshellarg($device)."");
-$tripp1 = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_tripp1 ".escapeshellarg($device)."");
-$tripp2 = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_tripp2 ".escapeshellarg($device)."");
-?>
+$apex_devices = array_filter(explode("\n", shell_exec("find /dev/ -maxdepth 1 -type c -name \"apex*\" -printf '%f\n' 2>/dev/null")));
+
+if(empty($apex_devices)) {
+  echo '<p>&nbsp;</p><h2 style="text-align: center;"><strong><span style="color: #ff0000;">No PCI based Coral TPU Devices found!</span><br /></strong></h1>';
+} else {
+  foreach (array_reverse(array_filter(($apex_devices))) as $device) {
+    $status = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_status ".escapeshellarg($device)."");
+    $drv_v = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_driver_version ".escapeshellarg($device)."");
+    $frw_v = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_framework_version ".escapeshellarg($device)."");
+    $temp = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp ".escapeshellarg($device)."");
+    $tempinter = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_hot1 ".escapeshellarg($device)."");
+    $tempinter_en = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_hot1_en ".escapeshellarg($device)."");
+    $tempshutd = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_hot2 ".escapeshellarg($device)."");
+    $tempshutd_en = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_hot2_en ".escapeshellarg($device)."");
+    $tripp0 = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_tripp0 ".escapeshellarg($device)."");
+    $tripp1 = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_tripp1 ".escapeshellarg($device)."");
+    $tripp2 = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_tripp2 ".escapeshellarg($device)."");
+    $index_no = substr($device, strpos($device, "_") + 1); 
+    ?>
 <div style="width: 50%; float:left">
     <div id="title">
         <span class="left"></span>
@@ -48,7 +51,7 @@ $tripp2 = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get
     <table class="settings" align="left">
         <tr>
             <td>
-<b style="color:#ff5e4d;">Coral TPU 1:</br>
+<b style="color:#ff5e4d;">Coral TPU <?php echo $index_no; ?>:</br>
 <td>Status: <b><?php
 if ($temp <= -50) {
     echo '<b style="color:red">SHUTDOWN</b>';
@@ -108,273 +111,10 @@ echo ( $tempshutd_en == '1') ? '<b style="color:green">ENABLED</b>' : '<b style=
 <br/>
 <b style="color:orange"><?= $tripp0 ?> °C</b><b> - </b><b style="color:#e74c3c"><?= $tripp1 ?> °C</b><b> - </b><b style="color:red"><?= $tripp2 ?> °C</b></b><br/>
 <td/>
-<? endif; ?>
+
     </table>
 </div>
-
 <?
-if (file_exists('/dev/apex_1')):
-?>
-<?php
-$device = "apex_1";
-$status = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_status ".escapeshellarg($device)."");
-$drv_v = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_driver_version ".escapeshellarg($device)."");
-$frw_v = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_framework_version ".escapeshellarg($device)."");
-$temp = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp apex_0");
-$tempinter = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_hot1 ".escapeshellarg($device)."");
-$tempinter_en = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_hot1_en ".escapeshellarg($device)."");
-$tempalshutd = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_hot2 ".escapeshellarg($device)."");
-$tempalshutd_en = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_hot2_en ".escapeshellarg($device)."");
-$tripp0 = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_tripp0 ".escapeshellarg($device)."");
-$tripp1 = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_tripp1 ".escapeshellarg($device)."");
-$tripp2 = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_tripp2 ".escapeshellarg($device)."");
-?>
-<div style="width: 50%; float:right">
-    <div id="title">
-        <span class="left"></span>
-    </div>
-
-    <table class="settings" align="left">
-        <tr>
-            <td>
-<b style="color:#ff5e4d;">Coral TPU 2:</br>
-<td>Status: <b><?php
-if ($temp <= -50) {
-    echo '<b style="color:red">SHUTDOWN</b>';
-} else {
-    echo '<b style="color:green">ALIVE</b>';
-}
-?></b>
-<br/>
-Temperature: <?php
-if ($temp <= -50) {
-    echo '<b style="color:red">SHUTDWON</b>';
-} else {
-    ?><b><?php echo $temp; ?> °C</b>
-<?php } 
-?>
-<br/>
-Operating Frequency: <?php
-if ($temp >= $tripp2) {
-    echo '<b>62.5 MHz -</b><b style="color:red"> THROTTLED</b>';
-} elseif ($temp >= $tripp1) {
-    echo '<b>125 MHz -</b><b style="color:#e74c3c"> THROTTLED</b>';
-} elseif ($temp >= $tripp0) {
-    echo '<b>250 MHz -</b><b style="color:orange"> THROTTLED</b>';
-} elseif ($temp <= -50) {
-    echo '<b style="color:red">SHUTDOWN</b>';
-} else {
-    echo '<b style="color:green">500</b><b> MHz</b>';
+  }
 }
 ?>
-<br/>
-Driver Version: <b><?php
-echo $drv_v;
-?></b>
-<br/>
-Framework Version: <b><?php
-echo $frw_v;
-?></b>
-<br/>
-<br/>
-<b>Set Temperatur Limits:</b>
-<br/>
-<i style="color:orange">Interrupt Temperature: <?php
-echo $tempinter;
-?> °C</i><br/>Status: <?php
-echo ( $tempinter_en == '1') ? '<b style="color:green">ENABLED</b>' : '<b style="color:red">DISABLED</b>';
-?>
-<br/>
-<br/>
-<i style="color:red">Shutdown Temperature: <?php
-echo $tempshutd;
-?> °C</i><br/>Status: <?php
-echo ( $tempshutd_en == '1') ? '<b style="color:green">ENABLED</b>' : '<b style="color:red">DISABLED</b>';
-?>
-<br/>
-<br/>
-<b>Trottle Temperatures:</b>
-<br/>
-<b style="color:orange"><?= $tripp0 ?> °C</b><b> - </b><b style="color:#e74c3c"><?= $tripp1 ?> °C</b><b> - </b><b style="color:red"><?= $tripp2 ?> °C</b></b><br/>
-<td/>
-<? endif; ?>
-    </table>
-</div>
-
-<?
-if (file_exists('/dev/apex_2')):
-?>
-<?php
-$device = "apex_2";
-$status = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_status ".escapeshellarg($device)."");
-$drv_v = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_driver_version ".escapeshellarg($device)."");
-$frw_v = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_framework_version ".escapeshellarg($device)."");
-$temp = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp apex_0");
-$tempinter = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_hot1 ".escapeshellarg($device)."");
-$tempinter_en = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_hot1_en ".escapeshellarg($device)."");
-$tempalshutd = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_hot2 ".escapeshellarg($device)."");
-$tempalshutd_en = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_hot2_en ".escapeshellarg($device)."");
-$tripp0 = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_tripp0 ".escapeshellarg($device)."");
-$tripp1 = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_tripp1 ".escapeshellarg($device)."");
-$tripp2 = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_tripp2 ".escapeshellarg($device)."");
-?>
-<div style="width: 50%; float:left">
-    <div id="title">
-        <span class="left"></span>
-    </div>
-
-    <table class="settings" align="left">
-        <tr>
-            <td>
-<b style="color:#ff5e4d;">Coral TPU 3:</br>
-<td>Status: <b><?php
-if ($temp <= -50) {
-    echo '<b style="color:red">SHUTDOWN</b>';
-} else {
-    echo '<b style="color:green">ALIVE</b>';
-}
-?></b>
-<br/>
-Temperature: <?php
-if ($temp <= -50) {
-    echo '<b style="color:red">SHUTDWON</b>';
-} else {
-    ?><b><?php echo $temp; ?> °C</b>
-<?php } 
-?>
-<br/>
-Operating Frequency: <?php
-if ($temp >= $tripp2) {
-    echo '<b>62.5 MHz -</b><b style="color:red"> THROTTLED</b>';
-} elseif ($temp >= $tripp1) {
-    echo '<b>125 MHz -</b><b style="color:#e74c3c"> THROTTLED</b>';
-} elseif ($temp >= $tripp0) {
-    echo '<b>250 MHz -</b><b style="color:orange"> THROTTLED</b>';
-} elseif ($temp <= -50) {
-    echo '<b style="color:red">SHUTDOWN</b>';
-} else {
-    echo '<b style="color:green">500</b><b> MHz</b>';
-}
-?>
-<br/>
-Driver Version: <b><?php
-echo $drv_v;
-?></b>
-<br/>
-Framework Version: <b><?php
-echo $frw_v;
-?></b>
-<br/>
-<br/>
-<b>Set Temperatur Limits:</b>
-<br/>
-<i style="color:orange">Interrupt Temperature: <?php
-echo $tempinter;
-?> °C</i><br/>Status: <?php
-echo ( $tempinter_en == '1') ? '<b style="color:green">ENABLED</b>' : '<b style="color:red">DISABLED</b>';
-?>
-<br/>
-<br/>
-<i style="color:red">Shutdown Temperature: <?php
-echo $tempshutd;
-?> °C</i><br/>Status: <?php
-echo ( $tempshutd_en == '1') ? '<b style="color:green">ENABLED</b>' : '<b style="color:red">DISABLED</b>';
-?>
-<br/>
-<br/>
-<b>Trottle Temperatures:</b>
-<br/>
-<b style="color:orange"><?= $tripp0 ?> °C</b><b> - </b><b style="color:#e74c3c"><?= $tripp1 ?> °C</b><b> - </b><b style="color:red"><?= $tripp2 ?> °C</b></b><br/>
-<td/>
-<? endif; ?>
-    </table>
-</div>
-
-<?
-if (file_exists('/dev/apex_3')):
-?>
-<?php
-$device = "apex_3";
-$status = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_status ".escapeshellarg($device)."");
-$drv_v = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_driver_version ".escapeshellarg($device)."");
-$frw_v = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_framework_version ".escapeshellarg($device)."");
-$temp = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp apex_0");
-$tempinter = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_hot1 ".escapeshellarg($device)."");
-$tempinter_en = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_hot1_en ".escapeshellarg($device)."");
-$tempalshutd = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_hot2 ".escapeshellarg($device)."");
-$tempalshutd_en = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_hot2_en ".escapeshellarg($device)."");
-$tripp0 = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_tripp0 ".escapeshellarg($device)."");
-$tripp1 = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_tripp1 ".escapeshellarg($device)."");
-$tripp2 = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_tripp2 ".escapeshellarg($device)."");
-?>
-<div style="width: 50%; float:right">
-    <div id="title">
-        <span class="left"></span>
-    </div>
-
-    <table class="settings" align="left">
-        <tr>
-            <td>
-<b style="color:#ff5e4d;">Coral TPU 4:</br>
-<td>Status: <b><?php
-if ($temp <= -50) {
-    echo '<b style="color:red">SHUTDOWN</b>';
-} else {
-    echo '<b style="color:green">ALIVE</b>';
-}
-?></b>
-<br/>
-Temperature: <?php
-if ($temp <= -50) {
-    echo '<b style="color:red">SHUTDWON</b>';
-} else {
-    ?><b><?php echo $temp; ?> °C</b>
-<?php } 
-?>
-<br/>
-Operating Frequency: <?php
-if ($temp >= $tripp2) {
-    echo '<b>62.5 MHz -</b><b style="color:red"> THROTTLED</b>';
-} elseif ($temp >= $tripp1) {
-    echo '<b>125 MHz -</b><b style="color:#e74c3c"> THROTTLED</b>';
-} elseif ($temp >= $tripp0) {
-    echo '<b>250 MHz -</b><b style="color:orange"> THROTTLED</b>';
-} elseif ($temp <= -50) {
-    echo '<b style="color:red">SHUTDOWN</b>';
-} else {
-    echo '<b style="color:green">500</b><b> MHz</b>';
-}
-?>
-<br/>
-Driver Version: <b><?php
-echo $drv_v;
-?></b>
-<br/>
-Framework Version: <b><?php
-echo $frw_v;
-?></b>
-<br/>
-<br/>
-<b>Set Temperatur Limits:</b>
-<br/>
-<i style="color:orange">Interrupt Temperature: <?php
-echo $tempinter;
-?> °C</i><br/>Status: <?php
-echo ( $tempinter_en == '1') ? '<b style="color:green">ENABLED</b>' : '<b style="color:red">DISABLED</b>';
-?>
-<br/>
-<br/>
-<i style="color:red">Shutdown Temperature: <?php
-echo $tempshutd;
-?> °C</i><br/>Status: <?php
-echo ( $tempshutd_en == '1') ? '<b style="color:green">ENABLED</b>' : '<b style="color:red">DISABLED</b>';
-?>
-<br/>
-<br/>
-<b>Trottle Temperatures:</b>
-<br/>
-<b style="color:orange"><?= $tripp0 ?> °C</b><b> - </b><b style="color:#e74c3c"><?= $tripp1 ?> °C</b><b> - </b><b style="color:red"><?= $tripp2 ?> °C</b></b><br/>
-<td/>
-<? endif; ?>
-    </table>
-</div>

@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "coral-driver">
   <!ENTITY author    "ich777">
-  <!ENTITY version   "2022.07.21a">
+  <!ENTITY version   "2022.07.21b">
   <!ENTITY md5       "075932c595c33ccc46c09b9cded606e5">
   <!ENTITY launch    "Settings/coraltpu">
   <!ENTITY gitURL    "https://github.com/&author;/unraid-&name;/raw/master">
@@ -16,7 +16,7 @@
 
 <CHANGES>
 
-###2022.07.21a
+###2022.07.21b
 - Fixed download bug
 
 ###2022.07.21
@@ -101,7 +101,7 @@ fi
 }
 
 check() {
-if ! ls -1 &packages;/${KERNEL_V%%-*}/ | grep -q "${PACKAGE}" ; then
+if ! ls -1 &packages;/${KERNEL_V%%-*}/ | grep -iq "${PACKAGE}" ; then
   LAT_PACKAGE="$(wget -qO- https://api.github.com/repos/ich777/unraid-coral-driver/releases/tags/${KERNEL_V} | jq -r '.assets[].name' | grep "${PACKAGE}" | grep -E -v '\.md5$' | sort -V | tail -1)"
   echo
   echo "---------------Downloading Coral Accelerator Module Drivers!-----------------"

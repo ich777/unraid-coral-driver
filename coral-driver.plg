@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "coral-driver">
   <!ENTITY author    "ich777">
-  <!ENTITY version   "2022.07.19">
+  <!ENTITY version   "2022.07.21">
   <!ENTITY md5       "075932c595c33ccc46c09b9cded606e5">
   <!ENTITY launch    "Settings/coraltpu">
   <!ENTITY gitURL    "https://github.com/&author;/unraid-&name;/raw/master">
@@ -15,6 +15,11 @@
 <PLUGIN  name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;" min="6.9.0-rc2" support="https://forums.unraid.net/topic/98064-support-blakeblackshear-frigate/">
 
 <CHANGES>
+
+
+###2022.07.21
+- Version detection from package via GitHub API
+- Save md5 in packages directory
 
 ###2022.07.19
 - Bugfix if Kernel module is already available or not
@@ -74,9 +79,10 @@ This package contains the Coral Accelerator Module Drivers and installs them to 
 <INLINE>
 
 download() {
-#Download Coral Accelerator Module Drivers
-if wget -q -nc --show-progress --progress=bar:force:noscroll -O "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" "${DL_URL}/${PACKAGE}-1.txz" ; then
-  if [ "$(md5sum "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" | cut -d ' ' -f1)" != "$(wget -qO- "${DL_URL}/${PACKAGE}-1.txz.md5" | cut -d ' ' -f1)" ]; then
+# Download Coral Accelerator Module Drivers
+if wget -q -nc --show-progress --progress=bar:force:noscroll -O "&packages;/${KERNEL_V%%-*}/${LAT_PACKAGE}" "${DL_URL}/${LAT_PACKAGE}" ; then
+  wget -q -nc --show-progress --progress=bar:force:noscroll -O "&packages;/${KERNEL_V%%-*}/${LAT_PACKAGE}.md5" "${DL_URL}/${LAT_PACKAGE}.md5"
+  if [ "$(md5sum &packages;/${KERNEL_V%%-*}/${LAT_PACKAGE} | awk '{print $1}')" != "$(cat &packages;/${KERNEL_V%%-*}/${LAT_PACKAGE}.md5 | awk '{print $1}')" ]; then
     echo
     echo "---CHECKSUM ERROR!---"
     rm -rf &plugin; &emhttp;
@@ -94,17 +100,11 @@ fi
 
 check() {
 if [ ! -f "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" ]; then
+  LAT_PACKAGE="$(wget -qO- https://api.github.com/repos/ich777/unraid-coral-driver/releases/tags/${KERNEL_V} | jq -r '.assets[].name' | grep "${PACKAGE}" | grep -E -v '\.md5$' | sort -V | tail -1)"
   echo
   echo "---------------Downloading Coral Accelerator Module Drivers!-----------------"
   echo "---------This could take some time, please don't close this window!----------"
   download
-elif [ ! -s "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" ]; then
-  rm -rf &packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz
-  echo
-  echo "----Download is empty please contact the developer of this plugin if the-----"
-  echo "----------plugin has been already built against that Kernel version----------"
-  rm -rf &plugin; &emhttp;
-  exit 1
 else
   echo
   echo "---------------Coral Accelerator Module Drivers found locally----------------"
@@ -112,15 +112,16 @@ fi
 }
 
 install() {
-#Install Coral Accelerator Module Drivers
+# Install Coral Accelerator Module Drivers
 /sbin/installpkg "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz"
 depmod -a
 /sbin/modprobe gasket
 /sbin/modprobe apex
 }
 
+# Define Variables
 KERNEL_V="$(uname -r)"
-PACKAGE="coral-plugin-${KERNEL_V}"
+PACKAGE="Coral"
 DL_URL="https://github.com/ich777/unraid-coral-driver/releases/download/$KERNEL_V"
 
 if [ ! -d "&packages;/${KERNEL_V%%-*}" ]; then

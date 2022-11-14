@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "coral-driver">
   <!ENTITY author    "ich777">
-  <!ENTITY version   "2022.07.21d">
+  <!ENTITY version   "2022.11.14">
   <!ENTITY md5       "92aeccdb8d208a780207e1edbeb2a19c">
   <!ENTITY launch    "Settings/coraltpu">
   <!ENTITY gitURL    "https://github.com/&author;/unraid-&name;/raw/master">
@@ -15,6 +15,9 @@
 <PLUGIN  name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;" min="6.9.0-rc2" support="https://forums.unraid.net/topic/98064-support-blakeblackshear-frigate/">
 
 <CHANGES>
+
+###2022.11.14
+- Fixed driver doesn't load correctly on some systems
 
 ###2022.07.21d
 - Fixed temperature readout when using multiple PCI based Coral TPUs
@@ -121,6 +124,10 @@ install() {
 # Install Coral Accelerator Module Drivers
 /sbin/installpkg "&packages;/${KERNEL_V%%-*}/${PACKAGE}*.txz"
 depmod -a
+}
+
+activate() {
+# Modprobe modules
 /sbin/modprobe gasket
 /sbin/modprobe apex
 }
@@ -155,6 +162,11 @@ check
 #Check if drivers are available or need to be installed
 if ! modinfo apex -0 >/dev/null 2>&amp;1 ; then
   install > /dev/null
+fi
+
+#Check if drivers are already loaded
+if ! lsmod | grep "apex" >/dev/null 2>&amp;1 ; then
+  activate
 fi
 
 #Set temperature limits for Coral devices

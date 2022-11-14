@@ -245,6 +245,8 @@ echo "---Uninstalling Coral Accelerator Module Drivers---"
 echo "---------------------------------------------------"
 # Remove plugin related files
 removepkg &name;-&version;
+modprobe -f apex
+modprobe -f gasket
 rm -rf &emhttp;
 rm -rf &plugin;
 echo

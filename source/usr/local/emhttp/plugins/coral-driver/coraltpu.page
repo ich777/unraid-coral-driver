@@ -62,7 +62,7 @@ if ($temp <= -50) {
 <br/>
 Temperature: <?php
 if ($temp <= -50) {
-    echo '<b style="color:red">SHUTDWON</b>';
+    echo '<b style="color:red">SHUTDOWN</b>';
 } else {
     ?><b><?php echo $temp; ?> °C</b>
 <?php } 
@@ -91,7 +91,7 @@ echo $frw_v;
 ?></b>
 <br/>
 <br/>
-<b>Set Temperatur Limits:</b>
+<b>Set Temperature Limits:</b>
 <br/>
 <i style="color:orange">Interrupt Temperature: <?php
 echo $tempinter;

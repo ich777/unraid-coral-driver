@@ -53,8 +53,6 @@ $layout
 </tbody>
 EOT;
 
-var_dump($apex_devices);
-
 function CoralLayout() {
   $apex_devices = array_filter(explode("\n", shell_exec("find /dev/ -maxdepth 1 -type c -name \"apex*\" -printf '%f\n' 2>/dev/null")));
   $page_render = '';

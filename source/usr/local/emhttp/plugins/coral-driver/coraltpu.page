@@ -2,119 +2,75 @@ Menu="Utilities"
 Title="Coral Driver"
 Icon="coral-driver.png"
 ---
+<?php
+require_once '/usr/local/emhttp/plugins/coral-driver/include/apex.php';
+$apex_devices = array_filter(explode("\n", shell_exec("find /dev/ -maxdepth 1 -type c -name \"apex*\" -printf '%f\n' 2>/dev/null")));
+$apex_states = array();
+?>
 <script>
-//Don't execute commands again if page is refreshed
     if ( window.history.replaceState ) {
         window.history.replaceState( null, null, window.location.href );
     }
 </script>
 
-<script>
-//Disable submit button if no radio button is selected
-$(function(){
-    $("input[type='radio']").change(function(){
-
-        $("input[type='submit']").prop("disabled", false);
-        //Or
-        //$("input[type='submit']").removeAttr("disabled");
-    });
-});
-</script>
-
 <h1 style="text-align: center;"><a href="https://forums.unraid.net/topic/98064-support-blakeblackshear-frigate/" target="_blank" rel="noopener"><span style="color:#ff5e4d;">Coral TPU Driver</span></a></h1>
 
 <?php
-$apex_devices = array_filter(explode("\n", shell_exec("find /dev/ -maxdepth 1 -type c -name \"apex*\" -printf '%f\n' 2>/dev/null")));
-
 if(empty($apex_devices)) {
-  echo '<p>&nbsp;</p><h2 style="text-align: center;"><strong><span style="color: #ff0000;">No PCI based Coral TPU Devices found!</span><br /></strong></h1>';
+	echo '<p>&nbsp;</p><h2 style="text-align: center;"><strong><span style="color: #ff0000;">No PCI based Coral TPU Devices found!</span><br /></strong></h1>';
 } else {
-  foreach (array_reverse(array_filter(($apex_devices))) as $device) {
-    $status = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_status ".escapeshellarg($device)."");
-    $drv_v = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_driver_version ".escapeshellarg($device)."");
-    $frw_v = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_framework_version ".escapeshellarg($device)."");
-    $temp = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp ".escapeshellarg($device)."");
-    $tempinter = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_hot1 ".escapeshellarg($device)."");
-    $tempinter_en = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_hot1_en ".escapeshellarg($device)."");
-    $tempshutd = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_hot2 ".escapeshellarg($device)."");
-    $tempshutd_en = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_hot2_en ".escapeshellarg($device)."");
-    $tripp0 = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_tripp0 ".escapeshellarg($device)."");
-    $tripp1 = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_tripp1 ".escapeshellarg($device)."");
-    $tripp2 = shell_exec("/usr/local/emhttp/plugins/coral-driver/include/exec.sh get_temp_tripp2 ".escapeshellarg($device)."");
-    $index_no = substr($device, strpos($device, "_") + 1); 
-    ?>
-<div style="width: 50%; float:left">
-    <div id="title">
-        <span class="left"></span>
-    </div>
+	echo '<div style="display: flex; flex-wrap: wrap; justify-content: center;">';
+	foreach (array_reverse($apex_devices) as $apex_device) {
+		$apex_states = new apex($apex_device);
+		$apexNames[] = $apex_states->name;
+		echo '<div style="width: 30%; height: 300px; border: 1px solid #ccc; margin: 5px; box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);">';
+		echo '<b style="color: #ff5e4d; font-size: larger;">Coral TPU' . $apex_states->index . ':</b>';
+		echo '<div style="padding: 20px;">';
+		echo '<span style="padding: 10px;"><table style="width: 80%; text-align: left; line-height: 0.5;">';
+		echo '<tr><td>Status:</td><td id="' . $apex_states->name . '_status">' . $apex_states->status . '</b></td></tr>';
+		echo '<tr><td>Temperature:</td><td id="' . $apex_states->name . '_temp">' . $apex_states->temp . '</b></td></tr>';
+		echo '<tr><td>Frequency:</td><td id="' . $apex_states->name . '_frequency">' . $apex_states->frequency . '</b></td></tr>';
+		echo '</tr>';
+		echo '<tr><td>Driver Version:</td><td>' . $apex_states->driver_version . '</td></tr>';
+		echo '<tr><td>Framework Version:</td><td>' . $apex_states->framework_version . '</td></tr>';
+		echo '</table></span>';
+		echo '<p><b>Limits:</b></p>';
+		echo '<span style="padding: 10px;"><table style="width: 100%; text-align: left; line-height: 0.5;">';
+		echo '<tr><td>Interrupt Temperature:</td><td><b style="color:orange">' . $apex_states->temp_hot . '°C</b></td><td>Status:</td><td>' . ($apex_states->temp_hot_en == 0 ? '<td><b style="color:red">DISABLED</b></td>' : '<td><b style="color:green">ENABLED</b></td>') . '</td></tr>';
+		echo '<tr><td>Shutdown Temperature:</td><td><b style="color:red">' . $apex_states->temp_hot2 . '°C</b></td><td>Status:</td><td>' . ($apex_states->temp_hot2_en == 0 ? '<td><b style="color:red">DISABLED</b></td>' : '<td><b style="color:green">ENABLED</b></td>') . '</td></tr>';
+		echo '</table></span>';
+		echo '<p><b>Throttle Clocks and Temperatures:</b></p>';
+		echo '<span style="padding: 10px;"><table style="width: 50%; text-align: left; line-height: 0.5;">';
+		echo '<tr><td>250 MHz</td><td><b style="color:orange">' . $apex_states->temp_tripp0 . '°C</b></tr>';
+		echo '<tr><td>125 MHz</td><td><b style="color:#e74c3c">' . $apex_states->temp_tripp1 . '°C</b></tr>';
+		echo '<tr><td>62.5 MHz</td><td><b style="color:red">' . $apex_states->temp_tripp2 . '°C</b></tr>';
+		echo '</table></span>';
+		echo '</div>';
+		echo '</div>';
+	}
+	echo '</div>';
+}
+?>
 
-    <table class="settings" align="left">
-        <tr>
-            <td>
-<b style="color:#ff5e4d;">Coral TPU <?php echo $index_no; ?>:</br>
-<td>Status: <b><?php
-if ($temp <= -50) {
-    echo '<b style="color:red">SHUTDOWN</b>';
-} else {
-    echo '<b style="color:green">ALIVE</b>';
-}
-?></b>
-<br/>
-Temperature: <?php
-if ($temp <= -50) {
-    echo '<b style="color:red">SHUTDOWN</b>';
-} else {
-    ?><b><?php echo $temp; ?> °C</b>
-<?php } 
-?>
-<br/>
-Operating Frequency: <?php
-if ($temp >= $tripp2) {
-    echo '<b>62.5 MHz -</b><b style="color:red"> THROTTLED</b>';
-} elseif ($temp >= $tripp1) {
-    echo '<b>125 MHz -</b><b style="color:#e74c3c"> THROTTLED</b>';
-} elseif ($temp >= $tripp0) {
-    echo '<b>250 MHz -</b><b style="color:orange"> THROTTLED</b>';
-} elseif ($temp <= -50) {
-    echo '<b style="color:red">SHUTDOWN</b>';
-} else {
-    echo '<b style="color:green">500</b><b> MHz</b>';
-}
-?>
-<br/>
-Driver Version: <b><?php
-echo $drv_v;
-?></b>
-<br/>
-Framework Version: <b><?php
-echo $frw_v;
-?></b>
-<br/>
-<br/>
-<b>Set Temperature Limits:</b>
-<br/>
-<i style="color:orange">Interrupt Temperature: <?php
-echo $tempinter;
-?> °C</i><br/>Status: <?php
-echo ( $tempinter_en == '1') ? '<b style="color:green">ENABLED</b>' : '<b style="color:red">DISABLED</b>';
-?>
-<br/>
-<br/>
-<i style="color:red">Shutdown Temperature: <?php
-echo $tempshutd;
-?> °C</i><br/>Status: <?php
-echo ( $tempshutd_en == '1') ? '<b style="color:green">ENABLED</b>' : '<b style="color:red">DISABLED</b>';
-?>
-<br/>
-<br/>
-<b>Trottle Temperatures:</b>
-<br/>
-<b style="color:orange"><?= $tripp0 ?> °C</b><b> - </b><b style="color:#e74c3c"><?= $tripp1 ?> °C</b><b> - </b><b style="color:red"><?= $tripp2 ?> °C</b></b><br/>
-<td/>
+<script>
+var apexNames = <?= json_encode($apexNames); ?>;
 
-    </table>
-</div>
-<?
-  }
+function updateValues() {
+    $.ajax({
+        url: '/plugins/coral-driver/include/apex.php',
+        type: 'POST',
+        data: { action: 'updateValues', apexNames: JSON.stringify(apexNames) },
+        success: function(response) {
+            var data = JSON.parse(response);
+            for (var i = 0; i < data.length; i++) {
+                $('#' + data[i].name + '_status').html(data[i].status);
+                $('#' + data[i].name + '_temp').html(data[i].temp);
+                $('#' + data[i].name + '_frequency').html(data[i].frequency);
+            }
+        }
+    });
 }
-?>
+setInterval(function() {
+    updateValues();
+}, 5000);
+</script>

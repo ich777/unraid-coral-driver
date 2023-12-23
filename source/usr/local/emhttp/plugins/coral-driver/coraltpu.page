@@ -23,7 +23,7 @@ if(empty($apex_devices)) {
 	foreach (array_reverse($apex_devices) as $apex_device) {
 		$apex_states = new apex($apex_device);
 		$apexNames[] = $apex_states->name;
-		echo '<div style="width: 30%; height: 300px; border: 1px solid #ccc; margin: 5px; box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);">';
+		echo '<div style="width: 30%; height: 430px; border: 1px solid #ccc; margin: 5px; box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);">';
 		echo '<b style="color: #ff5e4d; font-size: larger;">Coral TPU' . $apex_states->index . ':</b>';
 		echo '<div style="padding: 20px;">';
 		echo '<span style="padding: 10px;"><table style="width: 80%; text-align: left; line-height: 0.5;">';

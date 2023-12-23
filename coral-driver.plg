@@ -2,8 +2,8 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "coral-driver">
   <!ENTITY author    "ich777">
-  <!ENTITY version   "2023.10.30">
-  <!ENTITY md5       "19090c5afbe6e44b87e7d42e5b438f29">
+  <!ENTITY version   "2023.12.24">
+  <!ENTITY md5       "d27fbcb25175ef9c34e0cb36d88a05e7">
   <!ENTITY launch    "Settings/coraltpu">
   <!ENTITY gitURL    "https://github.com/&author;/unraid-&name;/raw/master">
   <!ENTITY pluginURL "&gitURL;/&name;.plg">
@@ -15,6 +15,10 @@
 <PLUGIN  name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;" min="6.9.0-rc2" support="https://forums.unraid.net/topic/98064-support-blakeblackshear-frigate/">
 
 <CHANGES>
+
+###2023.12.24
+- Minor visual changes for plugin page
+- Fix for Dashboard card
 
 ###2023.10.30
 - Bugfixes remove debugging code and some minor leftovers

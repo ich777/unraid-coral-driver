@@ -95,7 +95,7 @@ rm -f $(ls &plugin;/&name;*.txz 2>/dev/null|grep -v '&version;')
 <INLINE>
 **Coral Accelerator Module Drivers**
 
-This package contains the Coral Accelerator Module Drivers and installs them to utilize them in your Docker containers.
+This package contains the Coral Accelerator Module Drivers (for PCI based TPUs) and installs them to utilize them in your Docker containers.
 </INLINE>
 </FILE>
 

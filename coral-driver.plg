@@ -1,9 +1,9 @@
 <?xml version='1.0' standalone='yes'?>
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "coral-driver">
-  <!ENTITY author    "ich777">
-  <!ENTITY version   "2023.12.24">
-  <!ENTITY md5       "d27fbcb25175ef9c34e0cb36d88a05e7">
+  <!ENTITY author    "unraid">
+  <!ENTITY version   "2025.02.04">
+  <!ENTITY md5       "8ab83bdeeca099ae972adb99dec43c8e">
   <!ENTITY launch    "Settings/coraltpu">
   <!ENTITY gitURL    "https://github.com/&author;/unraid-&name;/raw/master">
   <!ENTITY pluginURL "&gitURL;/&name;.plg">
@@ -12,9 +12,12 @@
   <!ENTITY packages  "/boot/config/plugins/&name;/packages">
 ]>
 
-<PLUGIN  name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;" min="6.9.0-rc2" support="https://forums.unraid.net/topic/98064-support-blakeblackshear-frigate/">
+<PLUGIN  name="&name;" author="limetech" version="&version;" launch="&launch;" pluginURL="&pluginURL;" min="6.9.0-rc2" support="https://forums.unraid.net/topic/98064-support-blakeblackshear-frigate/">
 
 <CHANGES>
+
+###2025.02.04
+- Switch repo from ich777 to unraid
 
 ###2023.12.24
 - Minor visual changes for plugin page
@@ -124,7 +127,7 @@ fi
 
 check() {
 if ! ls -1 &packages;/${KERNEL_V%%-*}/ | grep -q "${PACKAGE}" ; then
-  LAT_PACKAGE="$(wget -qO- https://api.github.com/repos/ich777/unraid-coral-driver/releases/tags/${KERNEL_V} | jq -r '.assets[].name' | grep "${PACKAGE}" | grep -E -v '\.md5$' | sort -V | tail -1)"
+  LAT_PACKAGE="$(wget -qO- https://api.github.com/repos/unraid/unraid-coral-driver/releases/tags/${KERNEL_V} | jq -r '.assets[].name' | grep "${PACKAGE}" | grep -E -v '\.md5$' | sort -V | tail -1)"
   echo
   echo "---------------Downloading Coral Accelerator Module Drivers!-----------------"
   echo "---------This could take some time, please don't close this window!----------"
@@ -150,7 +153,7 @@ activate() {
 # Define Variables
 KERNEL_V="$(uname -r)"
 PACKAGE="Coral"
-DL_URL="https://github.com/ich777/unraid-coral-driver/releases/download/$KERNEL_V"
+DL_URL="https://github.com/unraid/unraid-coral-driver/releases/download/$KERNEL_V"
 
 if [ ! -d "&packages;/${KERNEL_V%%-*}" ]; then
   mkdir -p "&packages;/${KERNEL_V%%-*}"

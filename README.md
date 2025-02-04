@@ -1,4 +1,6 @@
-# Unraid Coral Driver plugin
+# Moved: https://github.com/unraid/unraid-coral-driver
+
+### Unraid Coral Driver plugin
 
 This is the repository for the Unraid Coral Driver plugin.
 
